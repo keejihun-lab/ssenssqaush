@@ -173,11 +173,8 @@
         .text-label { font-size: 0.9rem; white-space: nowrap; }
 
         .footer {
-            display: flex; justify-content: space-between; align-items: center; margin-top: 5px; font-size: 0.75rem; color: var(--text-muted);
+            display: flex; justify-content: center; align-items: center; margin-top: 5px; font-size: 0.75rem; color: var(--text-muted);
         }
-        
-        .reset-btn { background: transparent; border: 1px solid var(--danger); color: var(--danger); padding: 4px 8px; font-size: 0.8rem; }
-        .reset-btn:hover { background: var(--danger); color: white; transform: none; }
         
         /* 모바일 대응: 세로로 분할 및 순서 강제 조정 */
         @media (max-width: 800px) {
@@ -260,7 +257,6 @@
     
     <div class="footer">
         <span>브라우저 로컬 저장소 사용됨</span>
-        <button class="reset-btn" onclick="resetAllData()">데이터 전부 초기화</button>
     </div>
 </div>
 
@@ -302,6 +298,14 @@
         document.getElementById('historyHeader').textContent = `📜 [${name}] 전적`;
         renderRanking(); 
         renderHistory(); 
+        
+        // 도전자 콤보박스 자동 동기화 (단, 1위는 도전자가 될 수 없으므로 제외)
+        const playerIndex = players.indexOf(name);
+        if (playerIndex > 0) {
+            const chalSelect = document.getElementById('challengerSelect');
+            chalSelect.value = playerIndex;
+            updateTargets(); // 대상자 목록도 자동으로 갱신
+        }
     }
 
     function renderHistory() {
@@ -423,14 +427,6 @@
             matchHistory.push(logEntry);
             saveData(); if(selectedPlayer) renderHistory();
             setTimeout(() => { alert(`💧 [책임자: ${managerName}] 승인 완료`); }, 100);
-        }
-    }
-
-    function resetAllData() {
-        if(confirm("모든 랭킹과 누적된 과거 전적 기록이 완전히 지워집니다. 진행하시겠습니까?")) {
-            players = [...INITIAL_PLAYERS]; matchHistory = []; selectedPlayer = null;
-            document.getElementById('historyHeader').textContent = `📜 전적 기록 (선수 선택)`;
-            saveData(); renderRanking(); renderHistory(); populateChallengers();
         }
     }
 
