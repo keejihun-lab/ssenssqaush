@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🏆 SSENS SQUASH RANKING 🏆</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;700&display=swap"
+        rel="stylesheet">
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, set, push, onValue, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -77,12 +80,12 @@
                 li.className = `player-card rank-${rank}`;
                 if (rank <= 3) li.classList.add('top-tier');
                 if (filterName === name) li.classList.add('active');
-                
+
                 li.innerHTML = `<div class="rank-badge">${rank}</div><div class="player-name">${name}</div>`;
-                
+
                 // 클릭 시 필터 토글
                 li.onclick = () => toggleFilter(name);
-                
+
                 playerList.appendChild(li);
             });
         }
@@ -122,8 +125,8 @@
 
         function renderLogs() {
             logList.innerHTML = '';
-            
-            const filteredLogs = filterName 
+
+            const filteredLogs = filterName
                 ? matchLogs.filter(log => log.challenger === filterName || log.target === filterName)
                 : matchLogs;
 
@@ -136,7 +139,7 @@
                 const item = document.createElement('div');
                 item.className = `log-item ${log.type === 'undo' ? 'undo' : (log.success ? 'win' : 'lose')}`;
                 const date = new Date(log.timestamp).toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-                
+
                 let logContent = `<strong>${log.challenger}</strong> → <strong>${log.target}</strong> 도전에 ${log.success ? '승리' : '패배'}!`;
                 if (log.type === 'undo') logContent = `↩️ 경기 결과 되돌리기 실행`;
 
@@ -182,7 +185,7 @@
             const chIdx = parseInt(comboChallenger.value);
             comboTarget.innerHTML = '<option value="">대상 선택</option>';
             if (isNaN(chIdx)) return;
-            const startIdx = Math.max(0, chIdx - 4);
+            const startIdx = Math.max(0, chIdx - 3);
             for (let i = chIdx - 1; i >= startIdx; i--) {
                 const opt = document.createElement('option');
                 opt.value = i;
@@ -208,7 +211,7 @@
 
             const challengerName = players[chIdx];
             const targetName = players[targetIdx];
-            
+
             if (isWin) {
                 const movedPlayer = players.splice(chIdx, 1)[0];
                 players.splice(targetIdx, 0, movedPlayer);
@@ -253,13 +256,13 @@
                     // Firebase에서 마지막 로그 ID를 찾아 삭제하고 싶다면 추가 로직 필요
                     // 여기서는 단순히 '되돌리기 로그'만 추가합니다.
                 }
-                
+
                 await push(ref(db, 'matchLogs'), {
                     type: 'undo',
                     editor: editor,
                     timestamp: Date.now()
                 });
-                
+
                 // 되돌리기 후에는 다시 되돌리지 못하게 이전 기록 삭제
                 await remove(ref(db, 'previousRankings'));
                 alert("이전 순위로 복구되었습니다.");
@@ -269,47 +272,248 @@
         initApp();
     </script>
     <style>
-        :root { --glass: rgba(255, 255, 255, 0.1); --glass-border: rgba(255, 255, 255, 0.2); --accent: #00ffcc; --secondary: #ff33cc; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Outfit', 'Noto Sans KR', sans-serif; background: #0d0d12 url('bg.png') center/cover no-repeat fixed; color: white; min-height: 100vh; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 1200px; padding: 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-        @media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
-        .glass-panel { background: var(--glass); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 1.5rem; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
-        h1 { grid-column: 1 / -1; text-align: center; font-size: 2.5rem; font-weight: 700; margin-bottom: 2rem; text-shadow: 0 0 20px var(--accent); }
-        h2 { font-size: 1.25rem; margin-bottom: 1.5rem; color: var(--accent); display: flex; align-items: center; gap: 8px; }
-        .ranking-area { display: flex; flex-direction: column; gap: 10px; }
-        .player-card { display: flex; align-items: center; padding: 0.75rem 1.25rem; background: rgba(255,255,255,0.05); border-radius: 12px; transition: 0.3s; cursor: pointer; border: 1px solid transparent; }
-        .player-card:hover { transform: translateX(8px); background: rgba(255,255,255,0.1); border-color: var(--accent); }
-        .player-card.active { border-color: var(--accent); background: rgba(0, 255, 204, 0.1); box-shadow: 0 0 15px rgba(0, 255, 204, 0.2); }
-        .rank-badge { width: 36px; height: 36px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; margin-right: 1.5rem; }
-        .top-tier.rank-1 .rank-badge { background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); }
-        .top-tier.rank-2 .rank-badge { background: linear-gradient(135deg, #E0E0E0, #A0A0A0); color: #000; box-shadow: 0 0 15px rgba(192, 192, 192, 0.4); }
-        .top-tier.rank-3 .rank-badge { background: linear-gradient(135deg, #CD7F32, #8B4513); color: #000; box-shadow: 0 0 15px rgba(205, 127, 50, 0.4); }
-        .input-group { display: flex; flex-direction: column; gap: 1rem; }
-        select, input { background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 0.8rem; color: white; border-radius: 12px; font-size: 1rem; outline: none; }
-        button { background: var(--accent); color: #000; border: none; padding: 1rem; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,255,204,0.3); }
-        button:hover { transform: translateY(-2px); filter: brightness(1.1); }
-        .undo-btn { background: transparent; color: #ffaa00; border: 1px solid #ffaa00; margin-top: 10px; box-shadow: none; }
-        .undo-btn:hover { background: #ffaa00; color: #000; }
-        .log-list { max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .log-item { padding: 1rem; border-radius: 12px; background: rgba(0,0,0,0.2); font-size: 0.9rem; border-left: 4px solid #777; }
-        .log-item.win { border-left-color: var(--accent); }
-        .log-item.lose { border-left-color: var(--secondary); opacity: 0.8; }
-        .log-item.undo { border-left-color: #ffaa00; background: rgba(255, 170, 0, 0.1); }
-        .log-meta { display: block; font-size: 0.75rem; color: #aaa; margin-top: 5px; }
+        :root {
+            --glass: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --accent: #00ffcc;
+            --secondary: #ff33cc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', 'Noto Sans KR', sans-serif;
+            background: #0d0d12 url('bg.png') center/cover no-repeat fixed;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .glass-panel {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            grid-column: 1 / -1;
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 20px var(--accent);
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ranking-area {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .player-card {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.25rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            transition: 0.3s;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .player-card:hover {
+            transform: translateX(8px);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent);
+        }
+
+        .player-card.active {
+            border-color: var(--accent);
+            background: rgba(0, 255, 204, 0.1);
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);
+        }
+
+        .rank-badge {
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-right: 1.5rem;
+        }
+
+        .top-tier.rank-1 .rank-badge {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        }
+
+        .top-tier.rank-2 .rank-badge {
+            background: linear-gradient(135deg, #E0E0E0, #A0A0A0);
+            color: #000;
+            box-shadow: 0 0 15px rgba(192, 192, 192, 0.4);
+        }
+
+        .top-tier.rank-3 .rank-badge {
+            background: linear-gradient(135deg, #CD7F32, #8B4513);
+            color: #000;
+            box-shadow: 0 0 15px rgba(205, 127, 50, 0.4);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        select,
+        input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            padding: 0.8rem;
+            color: white;
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        button {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 1rem;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 255, 204, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        .undo-btn {
+            background: transparent;
+            color: #ffaa00;
+            border: 1px solid #ffaa00;
+            margin-top: 10px;
+            box-shadow: none;
+        }
+
+        .undo-btn:hover {
+            background: #ffaa00;
+            color: #000;
+        }
+
+        .log-list {
+            max-height: 400px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .log-item {
+            padding: 1rem;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            font-size: 0.9rem;
+            border-left: 4px solid #777;
+        }
+
+        .log-item.win {
+            border-left-color: var(--accent);
+        }
+
+        .log-item.lose {
+            border-left-color: var(--secondary);
+            opacity: 0.8;
+        }
+
+        .log-item.undo {
+            border-left-color: #ffaa00;
+            background: rgba(255, 170, 0, 0.1);
+        }
+
+        .log-meta {
+            display: block;
+            font-size: 0.75rem;
+            color: #aaa;
+            margin-top: 5px;
+        }
 
         /* 필터 UI 스타일 */
-        .filter-info { margin-bottom: 1rem; display: none; }
-        .filter-tag {
-            display: inline-flex; align-items: center; gap: 10px;
-            padding: 0.5rem 1rem; border-radius: 20px;
-            background: rgba(0, 255, 204, 0.15); border: 1px solid var(--accent);
-            color: var(--accent); font-weight: 600; font-size: 0.9rem;
+        .filter-info {
+            margin-bottom: 1rem;
+            display: none;
         }
-        .clear-filter { cursor: pointer; color: white; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; transition: 0.3s; }
-        .clear-filter:hover { background: #ff5555; }
+
+        .filter-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            background: rgba(0, 255, 204, 0.15);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .clear-filter {
+            cursor: pointer;
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            transition: 0.3s;
+        }
+
+        .clear-filter:hover {
+            background: #ff5555;
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>🏆 SSENS SQUASH RANKING</h1>
@@ -340,4 +544,5 @@
         </div>
     </div>
 </body>
+
 </html>
