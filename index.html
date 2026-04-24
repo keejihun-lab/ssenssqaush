@@ -95,7 +95,6 @@
                 filterName = "";
             } else {
                 filterName = name;
-                if (window.innerWidth <= 600) window.switchTab('history');
             }
             renderRankings();
             renderLogs();
@@ -268,13 +267,6 @@
                 await remove(ref(db, 'previousRankings'));
                 alert("이전 순위로 복구되었습니다.");
             }
-        };
-
-        window.switchTab = (tabName) => {
-            document.querySelectorAll('.glass-panel').forEach(p => p.classList.remove('active-panel'));
-            document.getElementById('panel-' + tabName).classList.add('active-panel');
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelector(`.tab-btn[data-tab="${tabName}"]`).classList.add('active');
         };
 
         initApp();
@@ -520,9 +512,22 @@
             background: #ff5555;
         }
 
-        /* ── 모바일 탭 레이아웃 ── */
-        .tab-bar { display: none; }
+        /* 버튼 행 (모든 화면) */
+        .button-row {
+            display: flex;
+            gap: 0.75rem;
+        }
 
+        .button-row .undo-btn {
+            flex: 1;
+            margin-top: 0;
+        }
+
+        .button-row button:last-child {
+            flex: 2;
+        }
+
+        /* ── 모바일 레이아웃 ── */
         @media (max-width: 600px) {
             body {
                 overflow: hidden;
@@ -530,60 +535,49 @@
             }
 
             .container {
-                display: flex;
-                flex-direction: column;
+                grid-template-columns: 2fr 3fr;
+                grid-template-rows: auto 1fr;
                 height: 100dvh;
-                padding: 0;
-                gap: 0;
-                max-width: 100%;
+                padding: 0.5rem;
+                gap: 0.5rem;
+                align-items: stretch;
             }
 
             h1 {
-                font-size: 1.1rem;
-                margin: 0;
-                padding: 0.7rem 1rem;
-                background: rgba(0, 0, 0, 0.5);
-                backdrop-filter: blur(12px);
-                border-bottom: 1px solid var(--glass-border);
-                flex-shrink: 0;
-                letter-spacing: 0.05em;
-            }
-
-            .right-column {
-                display: contents;
+                font-size: 0.95rem;
+                margin-bottom: 0.25rem;
             }
 
             .glass-panel {
-                display: none;
-                flex-direction: column;
-                flex: 1;
-                overflow: hidden;
-                border-radius: 0;
-                border: none;
-                border-top: 1px solid var(--glass-border);
-                padding: 1rem;
-                box-shadow: none;
-                margin-bottom: 0 !important;
-            }
-
-            .glass-panel.active-panel {
-                display: flex;
+                padding: 0.65rem;
+                border-radius: 14px;
             }
 
             h2 {
-                font-size: 1rem;
-                margin-bottom: 0.75rem;
+                font-size: 0.8rem;
+                margin-bottom: 0.4rem;
+            }
+
+            /* 랭킹 패널: 왼쪽 컬럼 전체 높이 채우기 */
+            #panel-ranking {
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+
+            #panel-ranking h2 {
                 flex-shrink: 0;
             }
 
             .ranking-area {
                 flex: 1;
                 overflow-y: auto;
-                gap: 7px;
+                gap: 4px;
             }
 
+            /* 2/3 크기 선수 카드 */
             .player-card {
-                padding: 0.6rem 1rem;
+                padding: 0.28rem 0.5rem;
             }
 
             .player-card:hover {
@@ -591,30 +585,32 @@
             }
 
             .rank-badge {
-                width: 30px;
-                height: 30px;
-                font-size: 0.85rem;
-                margin-right: 1rem;
+                width: 22px;
+                height: 22px;
+                font-size: 0.65rem;
+                margin-right: 0.45rem;
+                flex-shrink: 0;
             }
 
-            .input-group {
-                gap: 0.6rem;
-                overflow-y: auto;
+            .player-name {
+                font-size: 0.78rem;
+            }
+
+            /* 오른쪽 컬럼: 경기기록(상) + 결과입력(하) */
+            .right-column {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+                overflow: hidden;
+            }
+
+            /* 경기 기록: 위로 배치, 남은 공간 채우기 */
+            #panel-history {
+                order: -1;
                 flex: 1;
-            }
-
-            select, input {
-                padding: 0.65rem 0.8rem;
-                font-size: 0.95rem;
-            }
-
-            button {
-                padding: 0.85rem;
-                font-size: 0.95rem;
-            }
-
-            .undo-btn {
-                margin-top: 0;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
             }
 
             .filter-info {
@@ -625,49 +621,32 @@
                 flex: 1;
                 max-height: none;
                 overflow-y: auto;
+                gap: 6px;
             }
 
-            /* 하단 탭바 */
-            .tab-bar {
-                display: flex;
+            .log-item {
+                padding: 0.45rem 0.6rem;
+                font-size: 0.72rem;
+            }
+
+            /* 결과 입력: 아래 고정 */
+            #panel-entry {
                 flex-shrink: 0;
-                background: rgba(0, 0, 0, 0.7);
-                backdrop-filter: blur(16px);
-                border-top: 1px solid var(--glass-border);
-                padding-bottom: env(safe-area-inset-bottom);
+                margin-bottom: 0 !important;
             }
 
-            .tab-btn {
-                flex: 1;
-                padding: 0.6rem 0.5rem;
-                background: none;
-                border: none;
-                color: #666;
-                font-size: 0.65rem;
-                font-family: 'Outfit', 'Noto Sans KR', sans-serif;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 3px;
-                box-shadow: none;
-                border-radius: 0;
-                cursor: pointer;
-                transition: color 0.2s;
+            .input-group {
+                gap: 0.35rem;
             }
 
-            .tab-btn:hover {
-                transform: none;
-                filter: none;
-                color: #aaa;
+            select {
+                padding: 0.45rem 0.5rem;
+                font-size: 0.78rem;
             }
 
-            .tab-btn.active {
-                color: var(--accent);
-            }
-
-            .tab-icon {
-                font-size: 1.3rem;
-                line-height: 1;
+            button {
+                padding: 0.55rem 0.4rem;
+                font-size: 0.75rem;
             }
         }
     </style>
@@ -676,7 +655,7 @@
 <body>
     <div class="container">
         <h1>🏆 SSENS SQUASH RANKING</h1>
-        <div class="glass-panel active-panel" id="panel-ranking">
+        <div class="glass-panel" id="panel-ranking">
             <h2>📊 Current Rankings</h2>
             <div id="playerList" class="ranking-area"></div>
         </div>
@@ -691,8 +670,10 @@
                         <option value="lose">패배 (순위 유지)</option>
                     </select>
                     <select id="editorName"></select>
-                    <button onclick="applyResult()">결과 반영하기</button>
-                    <button class="undo-btn" onclick="undoLastResult()">↩️ 마지막 결과 되돌리기</button>
+                    <div class="button-row">
+                        <button class="undo-btn" onclick="undoLastResult()">↩️ 되돌리기</button>
+                        <button onclick="applyResult()">결과 반영하기</button>
+                    </div>
                 </div>
             </div>
             <div class="glass-panel" id="panel-history">
@@ -701,17 +682,6 @@
                 <div id="logList" class="log-list"></div>
             </div>
         </div>
-        <nav class="tab-bar">
-            <button class="tab-btn active" data-tab="ranking" onclick="switchTab('ranking')">
-                <span class="tab-icon">📊</span>랭킹
-            </button>
-            <button class="tab-btn" data-tab="entry" onclick="switchTab('entry')">
-                <span class="tab-icon">🖋️</span>결과입력
-            </button>
-            <button class="tab-btn" data-tab="history" onclick="switchTab('history')">
-                <span class="tab-icon">🕒</span>기록
-            </button>
-        </nav>
     </div>
 </body>
 
