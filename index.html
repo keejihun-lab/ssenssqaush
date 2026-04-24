@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>🏆 SSENS SQUASH RANKING 🏆</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;700&display=swap"
@@ -95,6 +95,7 @@
                 filterName = "";
             } else {
                 filterName = name;
+                if (window.innerWidth <= 600) window.switchTab('history');
             }
             renderRankings();
             renderLogs();
@@ -267,6 +268,13 @@
                 await remove(ref(db, 'previousRankings'));
                 alert("이전 순위로 복구되었습니다.");
             }
+        };
+
+        window.switchTab = (tabName) => {
+            document.querySelectorAll('.glass-panel').forEach(p => p.classList.remove('active-panel'));
+            document.getElementById('panel-' + tabName).classList.add('active-panel');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.tab-btn[data-tab="${tabName}"]`).classList.add('active');
         };
 
         initApp();
@@ -511,18 +519,169 @@
         .clear-filter:hover {
             background: #ff5555;
         }
+
+        /* ── 모바일 탭 레이아웃 ── */
+        .tab-bar { display: none; }
+
+        @media (max-width: 600px) {
+            body {
+                overflow: hidden;
+                height: 100dvh;
+            }
+
+            .container {
+                display: flex;
+                flex-direction: column;
+                height: 100dvh;
+                padding: 0;
+                gap: 0;
+                max-width: 100%;
+            }
+
+            h1 {
+                font-size: 1.1rem;
+                margin: 0;
+                padding: 0.7rem 1rem;
+                background: rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(12px);
+                border-bottom: 1px solid var(--glass-border);
+                flex-shrink: 0;
+                letter-spacing: 0.05em;
+            }
+
+            .right-column {
+                display: contents;
+            }
+
+            .glass-panel {
+                display: none;
+                flex-direction: column;
+                flex: 1;
+                overflow: hidden;
+                border-radius: 0;
+                border: none;
+                border-top: 1px solid var(--glass-border);
+                padding: 1rem;
+                box-shadow: none;
+                margin-bottom: 0 !important;
+            }
+
+            .glass-panel.active-panel {
+                display: flex;
+            }
+
+            h2 {
+                font-size: 1rem;
+                margin-bottom: 0.75rem;
+                flex-shrink: 0;
+            }
+
+            .ranking-area {
+                flex: 1;
+                overflow-y: auto;
+                gap: 7px;
+            }
+
+            .player-card {
+                padding: 0.6rem 1rem;
+            }
+
+            .player-card:hover {
+                transform: none;
+            }
+
+            .rank-badge {
+                width: 30px;
+                height: 30px;
+                font-size: 0.85rem;
+                margin-right: 1rem;
+            }
+
+            .input-group {
+                gap: 0.6rem;
+                overflow-y: auto;
+                flex: 1;
+            }
+
+            select, input {
+                padding: 0.65rem 0.8rem;
+                font-size: 0.95rem;
+            }
+
+            button {
+                padding: 0.85rem;
+                font-size: 0.95rem;
+            }
+
+            .undo-btn {
+                margin-top: 0;
+            }
+
+            .filter-info {
+                flex-shrink: 0;
+            }
+
+            .log-list {
+                flex: 1;
+                max-height: none;
+                overflow-y: auto;
+            }
+
+            /* 하단 탭바 */
+            .tab-bar {
+                display: flex;
+                flex-shrink: 0;
+                background: rgba(0, 0, 0, 0.7);
+                backdrop-filter: blur(16px);
+                border-top: 1px solid var(--glass-border);
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+
+            .tab-btn {
+                flex: 1;
+                padding: 0.6rem 0.5rem;
+                background: none;
+                border: none;
+                color: #666;
+                font-size: 0.65rem;
+                font-family: 'Outfit', 'Noto Sans KR', sans-serif;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 3px;
+                box-shadow: none;
+                border-radius: 0;
+                cursor: pointer;
+                transition: color 0.2s;
+            }
+
+            .tab-btn:hover {
+                transform: none;
+                filter: none;
+                color: #aaa;
+            }
+
+            .tab-btn.active {
+                color: var(--accent);
+            }
+
+            .tab-icon {
+                font-size: 1.3rem;
+                line-height: 1;
+            }
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
         <h1>🏆 SSENS SQUASH RANKING</h1>
-        <div class="glass-panel">
+        <div class="glass-panel active-panel" id="panel-ranking">
             <h2>📊 Current Rankings</h2>
             <div id="playerList" class="ranking-area"></div>
         </div>
         <div class="right-column">
-            <div class="glass-panel" style="margin-bottom: 2rem;">
+            <div class="glass-panel" id="panel-entry" style="margin-bottom: 2rem;">
                 <h2>🖋️ Match Result Entry</h2>
                 <div class="input-group">
                     <select id="comboChallenger" onchange="updateTargetCombo()"></select>
@@ -536,12 +695,23 @@
                     <button class="undo-btn" onclick="undoLastResult()">↩️ 마지막 결과 되돌리기</button>
                 </div>
             </div>
-            <div class="glass-panel">
+            <div class="glass-panel" id="panel-history">
                 <h2>🕒 Match History</h2>
                 <div id="filterInfo" class="filter-info"></div>
                 <div id="logList" class="log-list"></div>
             </div>
         </div>
+        <nav class="tab-bar">
+            <button class="tab-btn active" data-tab="ranking" onclick="switchTab('ranking')">
+                <span class="tab-icon">📊</span>랭킹
+            </button>
+            <button class="tab-btn" data-tab="entry" onclick="switchTab('entry')">
+                <span class="tab-icon">🖋️</span>결과입력
+            </button>
+            <button class="tab-btn" data-tab="history" onclick="switchTab('history')">
+                <span class="tab-icon">🕒</span>기록
+            </button>
+        </nav>
     </div>
 </body>
 
