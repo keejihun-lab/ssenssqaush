@@ -39,6 +39,8 @@
             "최은주", "방민선", "김승현", "하정유", "성스레"
         ];
 
+        const INJURED = ["한준수", "하정유"];
+
         let players = [];
         let matchLogs = [];
 
@@ -81,10 +83,18 @@
                 if (rank <= 3) li.classList.add('top-tier');
                 if (filterName === name) li.classList.add('active');
 
-                li.innerHTML = `<div class="rank-badge">${rank}</div><div class="player-name">${name}</div>`;
+                const injuredTag = INJURED.includes(name)
+                    ? ' <span class="injured-tag">(대결 불가)</span>' : '';
+                if (INJURED.includes(name)) li.classList.add('injured');
+                li.innerHTML = `<div class="rank-badge">${rank}</div><div class="player-name">${name}${injuredTag}</div>`;
 
-                // 클릭 시 필터 토글
-                li.onclick = () => toggleFilter(name);
+                li.onclick = () => {
+                    toggleFilter(name);
+                    if (index !== 0 && !INJURED.includes(name)) {
+                        comboChallenger.value = index;
+                        updateTargetCombo();
+                    }
+                };
 
                 playerList.appendChild(li);
             });
@@ -167,8 +177,8 @@
                 editorOpt.textContent = name;
                 editorNameInput.appendChild(editorOpt);
 
-                // 도전자 목록 채우기 (1위 제외)
-                if (i !== 0) {
+                // 도전자 목록 채우기 (1위 제외, 부상자 제외)
+                if (i !== 0 && !INJURED.includes(name)) {
                     const opt = document.createElement('option');
                     opt.value = i;
                     opt.textContent = `${i + 1}위 ${name}`;
@@ -185,8 +195,11 @@
             const chIdx = parseInt(comboChallenger.value);
             comboTarget.innerHTML = '<option value="">대상 선택</option>';
             if (isNaN(chIdx)) return;
-            const startIdx = Math.max(0, chIdx - 3);
-            for (let i = chIdx - 1; i >= startIdx; i--) {
+            // 위 4슬롯에 부상자가 있으면 5슬롯까지 확장
+            const base = players.slice(Math.max(0, chIdx - 4), chIdx);
+            const windowSize = base.some(n => INJURED.includes(n)) ? 5 : 4;
+            for (let i = chIdx - 1; i >= Math.max(0, chIdx - windowSize); i--) {
+                if (INJURED.includes(players[i])) continue;
                 const opt = document.createElement('option');
                 opt.value = i;
                 opt.textContent = `${i + 1}위 ${players[i]}`;
@@ -510,6 +523,18 @@
 
         .clear-filter:hover {
             background: #ff5555;
+        }
+
+        .player-card.injured {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        .injured-tag {
+            font-size: 0.68em;
+            color: #ff6666;
+            margin-left: 5px;
+            font-weight: 400;
         }
 
         /* 버튼 행 (모든 화면) */
